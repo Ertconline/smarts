@@ -14,8 +14,8 @@ typedef uint128_t uuid;
 typedef uint64_t id_type;
 
 struct point {
- uint64_t latitude;
- uint64_t longitude;
+ int64_t latitude;
+ int64_t longitude;
 };
 
 class [[eosio::contract("ertc.nft")]] nft : public eosio::contract {
@@ -31,7 +31,7 @@ public:
    void issue( name to,
                asset quantity,
                vector<point> coords,
-		         string name,
+		         uint64_t validation,
                string memo);
 
    [[eosio::action]]
@@ -67,14 +67,14 @@ public:
       point coords;
       name owner;  	 // token owner
       asset value;         // token value (1 SYS)
-      string tokenName;	 // token name
+      uint64_t validation;	 // token validation id
 
-      id_type  primary_key() const { return id; }
-      uint64_t get_owner()   const { return owner.value; }
-      point    get_coords()  const { return coords; }
-      asset    get_value()   const { return value; }
-	   uint64_t get_symbol()  const { return value.symbol.code().raw(); }
-	   string   get_name()    const { return tokenName; }
+      id_type   primary_key() const { return id; }
+      uint64_t  get_owner()   const { return owner.value; }
+      point     get_coords()  const { return coords; }
+      asset     get_value()   const { return value; }
+	   uint64_t  get_symbol()  const { return value.symbol.code().raw(); }
+	   uint64_t  get_validation()    const { return validation; }
       uint128_t get_coords_id() const { return to_coords_id(coords); }
 
 	   // generated token global uuid based on token id and
@@ -87,7 +87,7 @@ public:
 	   }
 
 	   string get_unique_name() const {
-		   string unique_name = tokenName + "#" + std::to_string(id);
+		   string unique_name = std::to_string(validation) + "#" + std::to_string(id);
 		   return unique_name;
 	   }
 
@@ -105,6 +105,7 @@ public:
 	                       indexed_by< "byissuer"_n, const_mem_fun< stats, uint64_t, &stats::get_issuer> > >;
 
 	using token_index = eosio::multi_index<"token"_n, token,
+                       indexed_by< "byvalidation"_n, const_mem_fun< token, uint64_t, &token::get_validation> >,
 	                    indexed_by< "byowner"_n, const_mem_fun< token, uint64_t, &token::get_owner> >,
 			              indexed_by< "bysymbol"_n, const_mem_fun< token, uint64_t, &token::get_symbol> >,
                        indexed_by< "bycoords"_n, const_mem_fun< token, uint128_t, &token::get_coords_id> > >;
@@ -112,7 +113,7 @@ public:
 private:
 	token_index tokens;
 
-   void mint(name owner, asset value, point coords, string name);
+   void mint(name owner, asset value, point coords, uint64_t validation);
 
    void sub_balance(name owner, asset value);
    void add_balance(name owner, asset value);

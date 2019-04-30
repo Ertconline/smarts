@@ -87,14 +87,14 @@ namespace ertc {
          eosio::action( eosio::permission_level{ _self, "active"_n},
                         params.fund_symbol.get_contract(),
                         "issue"_n,
-                        std::make_tuple(params.fund_account, eosio::asset{fund_cut, params.fund_symbol.get_symbol()}, fund_coords, std::to_string(it->id), ""s)
+                        std::make_tuple(params.fund_account, eosio::asset{fund_cut, params.fund_symbol.get_symbol()}, fund_coords, it->id, ""s)
                      ).send();
       }
 
       eosio::action( eosio::permission_level{ _self, "active"_n},
                      params.fund_symbol.get_contract(),
                      "issue"_n,
-                     std::make_tuple(it->creator, eosio::asset{creator_cut, params.fund_symbol.get_symbol()}, creator_coords, std::to_string(it->id), ""s)
+                     std::make_tuple(it->creator, eosio::asset{creator_cut, params.fund_symbol.get_symbol()}, creator_coords, it->id, ""s)
                   ).send();
 
       validations.modify(it, _self, [&](auto &fields) {

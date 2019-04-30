@@ -29,7 +29,7 @@ void nft::create( name issuer, std::string sym ) {
    });
 }
 
-void nft::issue( name to, asset quantity, vector<point> coords, string tkn_name, string memo) {
+void nft::issue( name to, asset quantity, vector<point> coords, uint64_t validation, string memo) {
 
 	check( is_account( to ), "to account does not exist");
 
@@ -38,8 +38,6 @@ void nft::issue( name to, asset quantity, vector<point> coords, string tkn_name,
    check( symbol.is_valid(), "invalid symbol name" );
    check( symbol.precision() == 0, "quantity must be a whole number" );
    check( memo.size() <= 256, "memo has more than 256 bytes" );
-
-	check( tkn_name.size() <= 32, "name has more than 32 bytes" );
 
    // Ensure currency has been created
    auto symbol_name = symbol.code().raw();
@@ -62,7 +60,7 @@ void nft::issue( name to, asset quantity, vector<point> coords, string tkn_name,
 
    // Mint nfts
    for(auto const& point: coords) {
-      mint( to, asset{1, symbol}, point, tkn_name);
+      mint( to, asset{1, symbol}, point, validation);
    }
 
    // Add balance to account
@@ -152,10 +150,10 @@ void nft::transfer( name 	from,
    add_balance( to, quantity );
 }
 
-void nft::mint( name 	owner,
-                asset 	value,
-                point 	coords,
-		          string 	tkn_name) {
+void nft::mint( name 	 owner,
+                asset 	 value,
+                point 	 coords,
+		          uint64_t validation) {
    // Check coords uniqueness
    auto coords_index = tokens.get_index<"bycoords"_n>();
    eosio::check(coords_index.find(token::to_coords_id(coords)) == coords_index.end(), "token coordinates are not unique");
@@ -165,7 +163,7 @@ void nft::mint( name 	owner,
       token.coords = coords;
       token.owner = owner;
       token.value = value;
-	   token.tokenName = tkn_name;
+	   token.validation = validation;
    });
 }
 
