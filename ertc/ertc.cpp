@@ -11,7 +11,7 @@ using namespace std::literals;
 namespace ertc {
 
    bool validate_coordinates(const std::vector<ertc::point>& coords) {
-      return coords.size() == 4;
+      return coords.size() >= 3;
    }
 
    ertc::ertc(eosio::name receiver, eosio::name code, eosio::datastream<const char *> ds)

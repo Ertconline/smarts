@@ -55,13 +55,13 @@ namespace ertc {
       [[eosio::action]]
       void newshare(uint8_t value);
 
-   private:
-
-      struct params {
+      struct [[eosio::table]] params {
         uint8_t fund_share;
         eosio::extended_symbol fund_symbol;
         eosio::name fund_account;
       };
+
+   private:
 
       typedef eosio::multi_index<"validation"_n, validation> validation_index;
       typedef eosio::singleton<"params"_n, params> params_singleton;
