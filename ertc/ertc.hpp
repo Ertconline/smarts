@@ -1,26 +1,19 @@
-//
-// Created by jack on 2/22/19.
-//
+// ertc
 
 #pragma once
 #include <eosio/eosio.hpp>
 #include <eosio/symbol.hpp>
 #include <eosio/singleton.hpp>
 #include <eosio/time.hpp>
+#include <prange.hpp>
 
 namespace ertc {
 
    class [[eosio::contract]] ertc : public eosio::contract {
    public:
 
-      struct point {
-        int64_t latitude;
-        int64_t longitude;
-      };
-
       struct [[eosio::table]] validation {
         uint64_t id;
-        // coordinates
         std::vector<point> coordinates;
         int64_t amount;
         eosio::name creator;
@@ -30,7 +23,7 @@ namespace ertc {
         enum state_t : uint8_t {
           waiting = 0,
           validated,
-          issued,
+          completed,
           canceled
         };
 
@@ -50,10 +43,25 @@ namespace ertc {
       void approve(uint64_t id);
 
       [[eosio::action]]
-      void issue(uint64_t id, const std::vector<point>& points);
+      void preissue(uint64_t id);
+
+      [[eosio::action]]
+      void issue(uint64_t id, int64_t amount, const std::vector<point>& points);
+
+      [[eosio::action]]
+      void payout(uint64_t id);
 
       [[eosio::action]]
       void newshare(uint8_t value);
+
+      [[eosio::action]]
+      void cancel(uint64_t id);
+
+      struct [[eosio::table]] currentstate {
+        uint64_t id;
+        int64_t issued;
+        uint8_t state;
+      };
 
       struct [[eosio::table]] params {
         uint8_t fund_share;
@@ -65,12 +73,14 @@ namespace ertc {
 
       typedef eosio::multi_index<"validation"_n, validation> validation_index;
       typedef eosio::singleton<"params"_n, params> params_singleton;
+      typedef eosio::singleton<"currentstate"_n, currentstate> current_singleton;
 
       validation_index validations;
       params_singleton parameters;
+      current_singleton current_validation;
 
       static constexpr uint8_t POINT_DIGITS = 8;
-      static constexpr params DEFAULT_PARAMS {.fund_share = 40, .fund_symbol = {{"ERTC", 0}, "ertc.nft"_n}, .fund_account = "ertc.fund"_n};
+      static constexpr params DEFAULT_PARAMS{.fund_share = 40, .fund_symbol = {{"ERTC", 0}, "ertc.nft"_n}, .fund_account = "ertc.fund"_n};
    };
 
 }
